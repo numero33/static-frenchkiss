@@ -1,0 +1,25 @@
+{
+    "name": "static-frenchkiss",
+    "version": "0.0.1",
+    "description": "",
+    "author": "Patrick Malleier <github@numero33.com>",
+    "license": "MIT",
+    "keywords": [],
+    "bugs": {
+        "url": "https://github.com/numero33/static-frenchkiss/issues"
+    },
+    "main": "./dist/index.js",
+    "directories": {
+        "bin": "./bin"
+    },
+    "scripts": {
+        "build": "tsc"
+    },
+    "devDependencies": {
+        "@types/node": "^20.8.10",
+        "typescript": "^5.2.2"
+    },
+    "dependencies": {
+        "minimist": "^1.2.8"
+    }
+}
