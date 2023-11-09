@@ -50,7 +50,7 @@ for (const lang of argv.l) {
         if (params.length > 0) {
             PropsPerKey.push(`[k: "${f}", ${params}]`);
             fReturn = `{
-                    const v = p[1]
+                    const [, v] = p
                     return ${flattenLang[f].code}
                 }`;
         } else PropsPerKey.push(`[k: "${f}"]`);
