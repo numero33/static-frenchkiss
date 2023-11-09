@@ -93,7 +93,7 @@ for (const lang of argv.l) {
 let content = ``;
 const PropTypes = [] as string[];
 for (const lang of argv.l) {
-    content += `import { Props as Props${lang.toUpperCase()} } from "@i18n/${lang.toLowerCase()}";\n`;
+    content += `import { Props as Props${lang.toUpperCase()} } from "@/i18n/${lang.toLowerCase()}";\n`;
     PropTypes.push(`Props${lang.toUpperCase()}`);
 }
 content += `import { useReducer, createContext, ReactNode, useContext } from "react";\n`;
@@ -152,7 +152,7 @@ content += `        switch (lang) {\n`;
 
 for (const lang of argv.l) {
     content += `            case "${lang.toLowerCase()}":\n`;
-    content += `                import(\`@i18n/${lang.toLowerCase()}.ts\`).then((module) => dispatch({ type: ACTIONTYPE.CHANGE_LANG, payload: { lang, translation: module.translate } }));\n`;
+    content += `                import(\`@/i18n/${lang.toLowerCase()}.ts\`).then((module) => dispatch({ type: ACTIONTYPE.CHANGE_LANG, payload: { lang, translation: module.translate } }));\n`;
     content += `                break;\n`;
 }
 
