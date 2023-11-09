@@ -4,7 +4,7 @@ export const translate = (...p: Props): string => {
 	switch (p[0]) {
 		case "a": return `a - EN`
 		case "b": {
-                    const v = p[1]
+                    const [, v] = p
                     return `b ${v?.count??""} - EN`
                 }
 		default: return `MISSING ${p[0]}`
