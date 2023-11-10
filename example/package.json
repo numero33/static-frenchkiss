@@ -8,7 +8,7 @@
         "build": "tsc && vite build",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "preview": "vite preview",
-        "i18n": "static-frenchkiss -d ./src/i18n -l de -l en"
+        "i18n": "static-frenchkiss -d ./src/i18n -i @i18n/ -l de -l en"
     },
     "dependencies": {
         "react": "^18.2.0",

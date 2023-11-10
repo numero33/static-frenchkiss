@@ -92,15 +92,14 @@ for (const lang of argv.l) {
 
 // Context
 
-let content = ``;
+let content = `import { useReducer, createContext, ReactNode, useContext } from "react";\n\n`;
 const PropTypes = [] as string[];
 for (const lang of argv.l) {
     content += `import { Props as Props${lang.toUpperCase()} } from "${importAlias}${lang.toLowerCase()}";\n`;
     PropTypes.push(`Props${lang.toUpperCase()}`);
 }
-content += `import { useReducer, createContext, ReactNode, useContext } from "react";\n`;
 
-content += `type TranslationProps = ${PropTypes.join(" | ")};\n`;
+content += `\ntype TranslationProps = ${PropTypes.join(" | ")};\n`;
 
 content += `interface IState {\n`;
 content += `    lang?: string;\n`;
@@ -138,19 +137,15 @@ content += `    const [state, dispatch] = useReducer(reducer, {});\n`;
 content += `    return <TranslationContext.Provider value={{ state, dispatch }}>{children}</TranslationContext.Provider>;\n`;
 content += `};\n`;
 
-content += `export const t = (...p: TranslationProps): string => {\n`;
-content += `    // eslint-disable-next-line react-hooks/rules-of-hooks\n`;
-content += `    const { state } = useContext(TranslationContext);\n`;
-content += `    return state.translation ? state.translation(...p) : \`\`;\n`;
-content += `};\n`;
-
-content += `export const useSet = () => {\n`;
-content += `    const { state, dispatch } = useContext(TranslationContext);\n`;
-
-content += `    return (lang: string): void => {\n`;
-content += `        if (state.lang === lang) return;\n`;
-
-content += `        switch (lang) {\n`;
+content += `export const useTranslation = (): {t: (...p: TranslationProps) => string; set: (lang: string) => void; language?: string} => {\n`;
+content += `    const {state, dispatch} = useContext(TranslationContext)\n`;
+content += `    return {\n`;
+content += `        t: (...p: TranslationProps): string => {\n`;
+content += `            return state.translation ? state.translation(...p) : \`\`\n`;
+content += `        },\n`;
+content += `        set: (lang: string): void => {\n`;
+content += `            if (state.lang === lang) return\n`;
+content += `            switch (lang) {\n`;
 
 for (const lang of argv.l) {
     content += `            case "${lang.toLowerCase()}":\n`;
@@ -158,14 +153,10 @@ for (const lang of argv.l) {
     content += `                break;\n`;
 }
 
-content += `        }\n`;
-content += `    };\n`;
-content += `};\n`;
-
-content += `export const getLanguage = (): string | undefined => {\n`;
-content += `    // eslint-disable-next-line react-hooks/rules-of-hooks\n`;
-content += `    const { state } = useContext(TranslationContext);\n`;
-content += `    return state.lang;\n`;
-content += `};\n`;
+content += `            }\n`;
+content += `        },\n`;
+content += `        language: state.lang,\n`;
+content += `    }\n`;
+content += `}\n`;
 
 fs.writeFileSync(argv.d + "/TranslationContext.tsx", content);
