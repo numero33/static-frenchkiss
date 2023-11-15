@@ -69,25 +69,6 @@ for (const lang of argv.l) {
     let propTypes = `export type Props = ${PropsPerKey.join(`\n | `)}\n`;
 
     fs.writeFileSync(file + ".ts", propTypes + content);
-
-    // support file
-
-    // console.debug({ keys, functionNames });
-
-    // const supportContent =
-    //     `import {${keys.map((x) => `f${keyToNumber[x]}`).join(`, `)}} from './${lang}'}
-    // type Key = ${keys.map((x) => `"${x}"`).join(` | `)}
-
-    // export const t = (key: Key) => {
-    //     switch (key) {
-    //     ` +
-    //     keys.map((x) => `        case "${x}": return f${keyToNumber[x]}();\n`).join("") +
-    //     `
-    //     }
-    // }
-    //     `;
-
-    // fs.writeFileSync(file + "_gen.ts", supportContent);
 }
 
 // Context
@@ -99,7 +80,7 @@ for (const lang of argv.l) {
     PropTypes.push(`Props${lang.toUpperCase()}`);
 }
 
-content += `\ntype TranslationProps = ${PropTypes.join(" | ")};\n`;
+content += `\nexport type TranslationProps = ${PropTypes.join(" | ")};\n`;
 
 content += `interface IState {\n`;
 content += `    lang?: string;\n`;
