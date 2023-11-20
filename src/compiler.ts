@@ -105,7 +105,7 @@ function generateCode(parts: Part[]): { code: string; variables: string[] } {
                 // Generate ternary check
                 for (const c of cases) {
                     // SELECT mode, direct assignement check
-                    code += `v.${p.variable}==\`${String(c.value)}\``;
+                    code += `v.${p.variable}===\`${String(c.value)}\``;
 
                     const { code: caseCode, variables: caseVariables } = generateCode(c.parts);
                     variables = [...variables, p.variable, ...caseVariables];
