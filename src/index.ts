@@ -73,71 +73,68 @@ for (const lang of argv.l) {
 
 // Context
 
-let content = `import { useReducer, createContext, ReactNode, useContext } from "react";\n\n`;
+let content = `import { useReducer, createContext, ReactNode, useContext, useMemo } from "react";\n\n`;
 const PropTypes = [] as string[];
 for (const lang of argv.l) {
     content += `import { Props as Props${lang.toUpperCase()} } from "${importAlias}${lang.toLowerCase()}";\n`;
     PropTypes.push(`Props${lang.toUpperCase()}`);
 }
 
-content += `\nexport type TranslationProps = ${PropTypes.join(" | ")};\n`;
+content +=`
+export type TranslationProps = ${PropTypes.join(" | ")};
 
-content += `interface IState {\n`;
-content += `    lang?: string;\n`;
-content += `    translation?: (...p: TranslationProps) => string;\n`;
-content += `}\n`;
-
-content += `enum ACTIONTYPE {\n`;
-content += `    CHANGE_LANG = "CHANGE_LANG",\n`;
-content += `}\n`;
-
-content += `type ACTION = { type: ACTIONTYPE.CHANGE_LANG; payload: { lang: string; translation: (...p: TranslationProps) => string } };\n`;
-
-content += `interface IContextProps {\n`;
-content += `    state: IState;\n`;
-content += `    dispatch: (action: ACTION) => void;\n`;
-content += `}\n`;
-
-content += `const TranslationContext = createContext<IContextProps>({} as IContextProps);\n`;
-
-content += `function reducer(state: IState, action: ACTION) {\n`;
-content += `    switch (action.type) {\n`;
-content += `        case ACTIONTYPE.CHANGE_LANG:\n`;
-content += `            return {\n`;
-content += `                ...state,\n`;
-content += `                lang: action.payload.lang,\n`;
-content += `                translation: action.payload.translation,\n`;
-content += `            };\n`;
-content += `        default:\n`;
-content += `            return state;\n`;
-content += `    }\n`;
-content += `}\n`;
-
-content += `export const TranslationProvider = ({ children }: { children: ReactNode }): JSX.Element => {\n`;
-content += `    const [state, dispatch] = useReducer(reducer, {});\n`;
-content += `    return <TranslationContext.Provider value={{ state, dispatch }}>{children}</TranslationContext.Provider>;\n`;
-content += `};\n`;
-
-content += `export const useTranslation = (): {t: (...p: TranslationProps) => string; set: (lang: string) => void; language?: string} => {\n`;
-content += `    const {state, dispatch} = useContext(TranslationContext)\n`;
-content += `    return {\n`;
-content += `        t: (...p: TranslationProps): string => {\n`;
-content += `            return state.translation ? state.translation(...p) : \`\`\n`;
-content += `        },\n`;
-content += `        set: (lang: string): void => {\n`;
-content += `            if (state.lang === lang) return\n`;
-content += `            switch (lang) {\n`;
-
+interface IState {
+    lang?: string;
+    translation?: (...p: TranslationProps) => string;
+}
+enum ACTIONTYPE {
+    CHANGE_LANG = "CHANGE_LANG",
+}
+type ACTION = { type: ACTIONTYPE.CHANGE_LANG; payload: { lang: string; translation: (...p: TranslationProps) => string } };
+interface IContextProps {
+    state: IState;
+    dispatch: (action: ACTION) => void;
+}
+const TranslationContext = createContext<IContextProps>({} as IContextProps);
+function reducer(state: IState, action: ACTION) {
+    switch (action.type) {
+        case ACTIONTYPE.CHANGE_LANG:
+            return {
+                ...state,
+                lang: action.payload.lang,
+                translation: action.payload.translation,
+            };
+        default:
+            return state;
+    }
+}
+export const TranslationProvider = ({ children }: { children: ReactNode }): JSX.Element => {
+    const [state, dispatch] = useReducer(reducer, {});
+    return <TranslationContext.Provider value={{ state, dispatch }}>{children}</TranslationContext.Provider>;
+};
+export const useTranslation = (): {t: (...p: TranslationProps) => string; set: (lang: string) => void; language?: string} => {
+    const {state, dispatch} = useContext(TranslationContext)
+    return useMemo(
+        () => ({
+            t: (...p: TranslationProps): string => {
+                return state.translation ? state.translation(...p) : \`\`;
+            },
+            set: (lang: string): void => {
+                if (state.lang === lang) return
+                switch (lang) {
+`
 for (const lang of argv.l) {
-    content += `            case "${lang.toLowerCase()}":\n`;
-    content += `                import(\`${importAlias}${lang.toLowerCase()}.ts\`).then((module) => dispatch({ type: ACTIONTYPE.CHANGE_LANG, payload: { lang, translation: module.translate } }));\n`;
-    content += `                break;\n`;
+    content += `
+                case "${lang.toLowerCase()}":
+                    import(\`${importAlias}${lang.toLowerCase()}.ts\`).then((module) => dispatch({ type: ACTIONTYPE.CHANGE_LANG, payload: { lang, translation: module.translate } }));
+                    break;`
 }
 
-content += `            }\n`;
-content += `        },\n`;
-content += `        language: state.lang,\n`;
-content += `    }\n`;
-content += `}\n`;
+content += `
+                }
+            },
+            language: state.lang,
+        }), [state, dispatch]);
+}\n`;
 
 fs.writeFileSync(argv.d + "/TranslationContext.tsx", content);
