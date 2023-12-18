@@ -1,9 +1,10 @@
-import { useReducer, createContext, ReactNode, useContext } from "react";
+import { useReducer, createContext, ReactNode, useContext, useMemo } from "react";
 
 import { Props as PropsDE } from "@i18n/de";
 import { Props as PropsEN } from "@i18n/en";
 
-type TranslationProps = PropsDE | PropsEN;
+export type TranslationProps = PropsDE | PropsEN;
+
 interface IState {
     lang?: string;
     translation?: (...p: TranslationProps) => string;
@@ -35,21 +36,23 @@ export const TranslationProvider = ({ children }: { children: ReactNode }): JSX.
 };
 export const useTranslation = (): {t: (...p: TranslationProps) => string; set: (lang: string) => void; language?: string} => {
     const {state, dispatch} = useContext(TranslationContext)
-    return {
-        t: (...p: TranslationProps): string => {
-            return state.translation ? state.translation(...p) : ``
-        },
-        set: (lang: string): void => {
-            if (state.lang === lang) return
-            switch (lang) {
-            case "de":
-                import(`@i18n/de.ts`).then((module) => dispatch({ type: ACTIONTYPE.CHANGE_LANG, payload: { lang, translation: module.translate } }));
-                break;
-            case "en":
-                import(`@i18n/en.ts`).then((module) => dispatch({ type: ACTIONTYPE.CHANGE_LANG, payload: { lang, translation: module.translate } }));
-                break;
-            }
-        },
-        language: state.lang,
-    }
+    return useMemo(
+        () => ({
+            t: (...p: TranslationProps): string => {
+                return state.translation ? state.translation(...p) : ``;
+            },
+            set: (lang: string): void => {
+                if (state.lang === lang) return
+                switch (lang) {
+
+                case "de":
+                    import(`@i18n/de.ts`).then((module) => dispatch({ type: ACTIONTYPE.CHANGE_LANG, payload: { lang, translation: module.translate } }));
+                    break;
+                case "en":
+                    import(`@i18n/en.ts`).then((module) => dispatch({ type: ACTIONTYPE.CHANGE_LANG, payload: { lang, translation: module.translate } }));
+                    break;
+                }
+            },
+            language: state.lang,
+        }), [state, dispatch]);
 }
