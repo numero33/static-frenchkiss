@@ -73,14 +73,14 @@ for (const lang of argv.l) {
 
 // Context
 
-let content = `import { useReducer, createContext, ReactNode, useContext } from "react";\n\n`;
+let content = `import { useReducer, createContext, ReactNode, useContext, useMemo } from "react";\n\n`;
 const PropTypes = [] as string[];
 for (const lang of argv.l) {
     content += `import { Props as Props${lang.toUpperCase()} } from "${importAlias}${lang.toLowerCase()}";\n`;
     PropTypes.push(`Props${lang.toUpperCase()}`);
 }
 
-content =`
+content +=`
 export type TranslationProps = ${PropTypes.join(" | ")};
 
 interface IState {
@@ -114,10 +114,10 @@ export const TranslationProvider = ({ children }: { children: ReactNode }): JSX.
 };
 export const useTranslation = (): {t: (...p: TranslationProps) => string; set: (lang: string) => void; language?: string} => {
     const {state, dispatch} = useContext(TranslationContext)
-    const returnValue = useMemo(
-        () => {
+    return useMemo(
+        () => ({
             t: (...p: TranslationProps): string => {
-                return state.translation ? state.translation(...p) : \`\`
+                return state.translation ? state.translation(...p) : \`\`;
             },
             set: (lang: string): void => {
                 if (state.lang === lang) return
@@ -130,11 +130,11 @@ for (const lang of argv.l) {
                     break;`
 }
 
-content += `                }
+content += `
+                }
             },
             language: state.lang,
-        });
-    return returnValue;
+        }), [state, dispatch]);
 }\n`;
 
 fs.writeFileSync(argv.d + "/TranslationContext.tsx", content);
