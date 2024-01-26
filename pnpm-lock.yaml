@@ -12,15 +12,15 @@ dependencies:
 devDependencies:
   '@types/node':
     specifier: ^20.9.0
-    version: 20.9.0
+    version: 20.11.7
   typescript:
     specifier: ^5.2.2
     version: 5.2.2
 
 packages:
 
-  /@types/node@20.9.0:
-    resolution: {integrity: sha512-nekiGu2NDb1BcVofVcEKMIwzlx4NjHlcjhoxxKBNLtz15Y1z7MYf549DFvkHSId02Ax6kGwWntIBPC3l/JZcmw==}
+  /@types/node@20.11.7:
+    resolution: {integrity: sha512-GPmeN1C3XAyV5uybAf4cMLWT9fDWcmQhZVtMFu7OR32WjrqGG+Wnk2V1d0bmtUyE/Zy1QJ9BxyiTih9z8Oks8A==}
     dependencies:
       undici-types: 5.26.5
     dev: true
