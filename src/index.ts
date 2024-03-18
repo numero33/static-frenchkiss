@@ -73,24 +73,40 @@ for (const lang of argv.l) {
 
 // Context
 
-let content = `import { useReducer, createContext, ReactNode, useContext, useMemo } from "react";\n\n`
-const PropTypes = [] as string[]
+let content = `import { useReducer, createContext, useContext, useMemo, PropsWithChildren} from "react";\n\n`
+
+const Languages: string[] = []
+const PropTypes: string[] = []
+const TranslateTypes: string[] = []
+const IStates: string[] = []
+
 for (const lang of argv.l) {
-    content += `import { Props as Props${lang.toUpperCase()} } from "${importAlias}${lang.toLowerCase()}";\n`
-    PropTypes.push(`Props${lang.toUpperCase()}`)
+    const l = lang.toUpperCase()
+
+    Languages.push(`"${lang}"`)
+    TranslateTypes.push(`typeof translate${l}`)
+    PropTypes.push(`Props${l}`)
+    IStates.push(`
+| {
+    lang?: "${lang}"
+    translation?: ${`typeof translate${l}`}
+}  
+`)
+
+    content += `import { Props as Props${lang.toUpperCase()}, translate as translate${lang.toUpperCase()} } from "${importAlias}${lang.toLowerCase()}";\n`
 }
 
 content += `
+export type Language = ${Languages.join(" | ")}
+export type Translate = ${TranslateTypes.join(" | ")}
 export type TranslationProps = ${PropTypes.join(" | ")};
 
-interface IState {
-    lang?: string;
-    translation?: (...p: TranslationProps) => string;
-}
+type IState = ${IStates.join("\n")}
+
 enum ACTIONTYPE {
     CHANGE_LANG = "CHANGE_LANG",
 }
-type ACTION = { type: ACTIONTYPE.CHANGE_LANG; payload: { lang: string; translation: (...p: TranslationProps) => string } };
+type ACTION = { type: ACTIONTYPE.CHANGE_LANG; payload: { lang: Language; translation: (...p: TranslationProps) => string } };
 interface IContextProps {
     state: IState;
     dispatch: (action: ACTION) => void;
@@ -108,30 +124,25 @@ function reducer(state: IState, action: ACTION) {
             return state;
     }
 }
-export const TranslationProvider = ({ children }: { children: ReactNode }): JSX.Element => {
-    const [state, dispatch] = useReducer(reducer, {});
-    return <TranslationContext.Provider value={{ state, dispatch }}>{children}</TranslationContext.Provider>;
-};
-export const useTranslation = (): {t: (...p: TranslationProps) => string; set: (lang: string) => void; language?: string} => {
+export type TranslationProviderProps = {
+    initialState?: IState
+}
+export const TranslationProvider = ({children, initialState = {}}: PropsWithChildren<TranslationProviderProps>) => {
+    const [state, dispatch] = useReducer(reducer, initialState)
+    return <TranslationContext.Provider value={{state, dispatch}}>{children}</TranslationContext.Provider>
+}
+export const useTranslation = () => {
     const {state, dispatch} = useContext(TranslationContext)
     return useMemo(
         () => ({
             t: (...p: TranslationProps): string => {
                 return state.translation ? state.translation(...p) : \`\`;
             },
-            set: (lang: string): void => {
+            set: (lang: Language): void => {
                 if (state.lang === lang) return
-                switch (lang) {
-`
-for (const lang of argv.l) {
-    content += `
-                case "${lang.toLowerCase()}":
-                    import(\`${importAlias}${lang.toLowerCase()}.ts\`).then((module) => dispatch({ type: ACTIONTYPE.CHANGE_LANG, payload: { lang, translation: module.translate } }));
-                    break;`
-}
-
-content += `
-                }
+                import(\`@/i18n/\${lang}\`).then((module: {translate: Translate}) =>
+                    dispatch({type: ACTIONTYPE.CHANGE_LANG, payload: {lang, translation: module.translate}}),
+                )
             },
             language: state.lang,
         }), [state, dispatch]);
