@@ -13,11 +13,13 @@
         "bin": "./bin"
     },
     "scripts": {
-        "build": "tsc"
+        "build": "tsc",
+        "format": "prettier -w \"src/**/*.{js,jsx,cjs,ts,tsx,mts,json,md}\""
     },
     "devDependencies": {
-        "@types/node": "^20.9.0",
-        "typescript": "^5.2.2"
+        "@types/node": "^20.11.28",
+        "prettier": "^3.2.5",
+        "typescript": "^5.4.2"
     },
     "dependencies": {
         "minimist": "^1.2.8"
