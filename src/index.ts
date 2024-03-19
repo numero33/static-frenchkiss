@@ -106,7 +106,7 @@ type IState = ${IStates.join("\n")}
 enum ACTIONTYPE {
     CHANGE_LANG = "CHANGE_LANG",
 }
-type ACTION = { type: ACTIONTYPE.CHANGE_LANG; payload: { lang: Language; translation: (...p: TranslationProps) => string } };
+type ACTION = { type: ACTIONTYPE.CHANGE_LANG; payload: Required<IState>};
 interface IContextProps {
     state: IState;
     dispatch: (action: ACTION) => void;
@@ -140,9 +140,13 @@ export const useTranslation = () => {
             },
             set: (lang: Language): void => {
                 if (state.lang === lang) return
-                import(\`@/i18n/\${lang}\`).then((module: {translate: Translate}) =>
-                    dispatch({type: ACTIONTYPE.CHANGE_LANG, payload: {lang, translation: module.translate}}),
-                )
+                switch (lang) {`
+for (const lang of argv.l) {
+    content += `case "${lang.toLowerCase()}":
+                                import(\`${importAlias}${lang.toLowerCase()}.ts\`).then(module => dispatch({ type: ACTIONTYPE.CHANGE_LANG, payload: { lang, translation: module.translate } }));
+                                break;`
+}
+content += `    }
             },
             language: state.lang,
         }), [state, dispatch]);
